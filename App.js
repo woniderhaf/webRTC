@@ -26,27 +26,24 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import WebRTC from './src/components/WebRTC';
-import Main from './src/components/Main';
+
 import {createAppContainer} from 'react-navigation'
 import {createStackNavigator} from 'react-navigation-stack'
+
+// pages 
+import WebRTC from './src/Pages/WebRTC';
+import Main   from './src/Pages/Main';
+import Room   from './src/Pages/Room';
 
 const App = (props) => {
 const options = {
   headerMode:'none',
   mode:'card'
 }
-  const roomBlock = createStackNavigator({
-    WebRTC:WebRTC
-  }, options, options.initialRouteName='WebRTC')
-
-  const mainBlock = createStackNavigator({
-    Main:Main
-  }, options, options.initialRouteName='Main')
 
   const AppNavigator = createStackNavigator({
-    Main:mainBlock,
-    Room:roomBlock,
+    Main:Main,
+    Room:Room,
   }, options, options,initialRouteName='Main')
 
   const AppContainer = createAppContainer(AppNavigator)

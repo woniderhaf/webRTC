@@ -1,6 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
-import socket from '../socket';
+import socket from '../socket/socket';
 import {
   ScreenCapturePickerView,
 	RTCPeerConnection,
