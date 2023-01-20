@@ -7,12 +7,14 @@
  */
 
 import React from 'react';
+import {SafeAreaView} from 'react-native-safe-area-context'
 import {
-  SafeAreaView,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
@@ -25,17 +27,39 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import WebRTC from './src/components/WebRTC';
+import Main from './src/components/Main';
+import {createAppContainer} from 'react-navigation'
+import {createStackNavigator} from 'react-navigation-stack'
+
+const App = (props) => {
+const options = {
+  headerMode:'none',
+  mode:'card'
+}
+  const roomBlock = createStackNavigator({
+    WebRTC:WebRTC
+  }, options, options.initialRouteName='WebRTC')
+
+  const mainBlock = createStackNavigator({
+    Main:Main
+  }, options, options.initialRouteName='Main')
+
+  const AppNavigator = createStackNavigator({
+    Main:mainBlock,
+    Room:roomBlock,
+  }, options, options,initialRouteName='Main')
+
+  const AppContainer = createAppContainer(AppNavigator)
 
 
-const App = () => {
+return (
+  <SafeAreaView style={{flex:1}} edges={['right', 'bottom', 'left']}>
+    <AppContainer/>
+  </SafeAreaView>
+)
 
 
 
-  return (
-    <View style={{flex:1,justifyContent:''}}>
-      <WebRTC/>
-    </View>
-  );
 };
 
 const styles = StyleSheet.create({
