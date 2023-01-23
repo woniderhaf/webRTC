@@ -250,6 +250,7 @@ android {
 }
 
 dependencies {
+    // compile project(':react-native-incall-manager')
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
     //noinspection GradleDynamicVersion

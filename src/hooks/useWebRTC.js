@@ -10,6 +10,24 @@ export const LOCAL_VIDEO = 'LOCAL_VIDEO';
 export default function useWebRTC(roomID) {
   const [clients, updateClients] = useStateWithCallback([]);
 
+  const rotateCamera = async() => {
+    const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
+    videoTrack._switchCamera();
+  }
+
+  const changeAudio = async() => {
+    const audioTrack = await localMediaStream.current.getAudioTracks()[ 0 ];
+    audioTrack.enabled = !audioTrack.enabled;
+  }
+
+  const changeCamera = async(audio,video) => {
+    // let mediaConstraints = {
+    //   audio,
+    //   video
+    // }
+    // const mediaStream = await mediaDevices.getUserMedia( mediaConstraints );
+    // localMediaStream.current = mediaStream;
+  }
   const addNewClient = useCallback((newClient, cb) => {
     updateClients(list => {
       if (!list.includes(newClient)) {
@@ -188,8 +206,10 @@ export default function useWebRTC(roomID) {
 
   return {
     clients,
-    provideMediaRef,
     localMediaStream,
-    peerConnections
+    peerConnections,
+    rotateCamera,
+    changeAudio,
+    changeCamera
   };
 }
