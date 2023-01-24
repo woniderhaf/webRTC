@@ -1,4 +1,4 @@
-import {useEffect, useRef, useCallback} from 'react';
+import {useEffect, useRef, useCallback, useState} from 'react';
 import freeice from 'freeice';
 import useStateWithCallback from './useStateWithCallback';
 import socket from '../socket/socket';
@@ -9,25 +9,28 @@ export const LOCAL_VIDEO = 'LOCAL_VIDEO';
 
 export default function useWebRTC(roomID) {
   const [clients, updateClients] = useStateWithCallback([]);
-
+  const [startCall,setStartCall] = useState(null)
   const rotateCamera = async() => {
     const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
     videoTrack._switchCamera();
   }
 
-  const changeAudio = async() => {
+  const changeAudio = async(bool) => {
     const audioTrack = await localMediaStream.current.getAudioTracks()[ 0 ];
-    audioTrack.enabled = !audioTrack.enabled;
+
+    if(bool) {
+      audioTrack.enabled = true
+    }
+    else {
+      audioTrack.enabled = false
+    }
   }
 
-  const changeCamera = async(audio,video) => {
-    // let mediaConstraints = {
-    //   audio,
-    //   video
-    // }
-    // const mediaStream = await mediaDevices.getUserMedia( mediaConstraints );
-    // localMediaStream.current = mediaStream;
+  const changeCamera = async(videoBool) => {
+    const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
+    videoTrack.enabled = videoBool
   }
+
   const addNewClient = useCallback((newClient, cb) => {
     updateClients(list => {
       if (!list.includes(newClient)) {
@@ -43,7 +46,6 @@ export default function useWebRTC(roomID) {
   const peerMediaElements = useRef({
     [LOCAL_VIDEO]: null,
   });
-
   useEffect(() => {
     async function handleNewPeer({peerID, createOffer}) {
       if (peerID in peerConnections.current) {
@@ -60,6 +62,7 @@ export default function useWebRTC(roomID) {
             peerID,
             iceCandidate: event.candidate,
           });
+        setStartCall(new Date().getTime())
         }
       }
 
@@ -67,7 +70,7 @@ export default function useWebRTC(roomID) {
       peerConnections.current[peerID].ontrack = ({streams: [remoteStream]}) => {
         tracksNumber++
 
-        if (tracksNumber === 2) { // video & audio tracks received
+        if (tracksNumber > 0) { // video & audio tracks received
           tracksNumber = 0;
           addNewClient(peerID, () => {
             if (peerMediaElements.current[peerID]) {
@@ -194,15 +197,12 @@ export default function useWebRTC(roomID) {
       .catch(e => console.error('Error getting userMedia:', e));
 
     return () => {
-      localMediaStream.current.getTracks().forEach(track => track.stop());
+      localMediaStream.current?.getTracks().forEach(track => track.stop());
 
       socket.emit(ACTIONS.LEAVE);
     };
   }, [roomID]);
 
-  const provideMediaRef = ((id, node) => {
-    peerMediaElements.current[id] = node;
-  }, []);
 
   return {
     clients,
@@ -210,6 +210,7 @@ export default function useWebRTC(roomID) {
     peerConnections,
     rotateCamera,
     changeAudio,
-    changeCamera
+    changeCamera,
+    startCall
   };
 }

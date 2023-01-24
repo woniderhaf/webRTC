@@ -13,8 +13,8 @@ const Main = props => {
   useEffect(() => {
     socket.on(ACTIONS.SHARE_ROOMS, ({rooms = []} = {}) => {
       setRooms(rooms)
-
     })
+
   },[])
   
   const connectionRoom = (roomId) => goto('Room', {roomId})
