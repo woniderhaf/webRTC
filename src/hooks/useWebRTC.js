@@ -174,13 +174,20 @@ export default function useWebRTC(roomID) {
 
   useEffect(() => {
     async function startCapture() {
-      localMediaStream.current = await mediaDevices.getUserMedia({
+      const devices = await mediaDevices.enumerateDevices()
+      const cameraDevices = devices.filter(device => device.kind === 'videoinput' ? device:false)
+      mediaStream = await mediaDevices.getUserMedia({
         audio: true,
         video: {
           width: 1280,
           height: 720,
         }
       });
+      if(cameraDevices.length < 1) {
+        let videoTrack = await mediaStream.getVideoTracks()[ 0 ];
+        videoTrack.enabled = false;
+      }
+      localMediaStream.current = mediaStream
 
       addNewClient(LOCAL_VIDEO, () => {
         const localVideoElement = peerMediaElements.current[LOCAL_VIDEO];

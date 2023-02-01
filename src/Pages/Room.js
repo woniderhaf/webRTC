@@ -43,6 +43,9 @@ const Room = props => {
     }
   }, [clients])
 
+
+
+
   useEffect(() => {
     callOffMp3.setNumberOfLoops(-1)
     InCallManager.start({media:'audio'})
@@ -53,6 +56,7 @@ const Room = props => {
     return () => {
       callOffMp3.stop()
       InCallManager.stop()
+      clearInterval(timerRef.current)
     }
   },[])
   useEffect(() => {
@@ -115,6 +119,7 @@ const Room = props => {
 
         {localMediaStream.current ? 
           <View style={[s.fullRTCView]}>
+          {/* <View style={{width:140,height:200, position:'absolute', top:40,right:12, borderRadius:20, zIndex:100}}> */}
             <RTCView
             streamURL={localMediaStream.current.toURL()}
             style={{width:'100%',height:'100%'}}
@@ -126,14 +131,18 @@ const Room = props => {
           </View>
           : null}
 
-        {remoteStream ? <RTCView
+        {remoteStream ? 
+        // <View style={{position:'absolute',width,height:height-100,top:0,left:0}}>
+          <RTCView
         streamURL={remoteStream}
         style={{width:140,height:200, position:'absolute', top:40,right:12, borderRadius:20}}
-        // style={{width,height:height-100, position:'absolute', top:0,right:0}}
+        // style={{width:'100%',height:'100%'}}
         mirror={false}
         objectFit='cover'
-        zOrder={100}
-        /> : null}
+        zOrder={1}
+        />
+        // </View>
+         : null}
 
         <View 
           style={{ height: height < 750 ? 75 : 100, justifyContent:'center', paddingHorizontal:16, flexDirection:'row', alignItems:'center', justifyContent:'space-around'}}
@@ -154,9 +163,9 @@ const Room = props => {
             <Image source={isAudio ? audio : audioOff}/>
           </TouchableOpacity>
 
-          <TouchableOpacity  onPress={callOff} style={[{height:60,width:60, backgroundColor:'red', borderRadius:50}, s.center]}>
+          {/* <TouchableOpacity  onPress={callOff} style={[{height:60,width:60, backgroundColor:'red', borderRadius:50}, s.center]}>
           <Image source={callOffIco}/>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
         </View>
 
