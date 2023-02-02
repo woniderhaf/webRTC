@@ -19,19 +19,11 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-import {createAppContainer} from 'react-navigation'
-import {createStackNavigator} from 'react-navigation-stack'
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // pages 
-import WebRTC from './src/Pages/WebRTC';
 import Main   from './src/Pages/Main';
 import Room   from './src/Pages/Room';
 
@@ -41,17 +33,40 @@ const options = {
   mode:'card'
 }
 
-  const AppNavigator = createStackNavigator({
-    Main:Main,
-    Room:Room,
-  }, options, options,initialRouteName='Main')
+const Stack = createNativeStackNavigator();
 
-  const AppContainer = createAppContainer(AppNavigator)
+  // const mainBlock = createStackNavigator({
+  //   Main:Main,
+  // }, options, options.initialRouteName='Main')
+
+  
+
+  // const roomblock = createStackNavigator({
+  //   Room:Room,
+  // }, options, options.initialRouteName='Room', options.headerLeft=null)
+
+  // const AppNavigator = () =>
+  // createSwitchNavigator(
+  //   {
+  //     Main:mainBlock,
+  //     Room:roomblock
+  //   },
+  //   options,
+  //   (options.initialRouteName = 'Main'),
+  // )
+
+  // const AppContainer = createAppContainer(AppNavigator)
 
 
 return (
   <SafeAreaView style={{flex:1}} edges={['right', 'bottom', 'left']}>
-    <AppContainer/>
+    {/* <AppContainer/> */}
+    <NavigationContainer>
+      <Stack.Navigator  screenOptions={{headerShown:false}}>
+        <Stack.Screen name='Main' component={Main}  />
+        <Stack.Screen {...props} name='Room' component={Room} options={{ headerBackVisible:false, gestureEnabled:false}}/>
+      </Stack.Navigator>
+    </NavigationContainer>
   </SafeAreaView>
 )
 

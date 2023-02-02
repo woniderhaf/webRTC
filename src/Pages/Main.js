@@ -20,7 +20,7 @@ const Main = props => {
 
   },[])
   
-  const connectionRoom = (roomId) => goto('Room', {roomId})
+  const connectionRoom = (roomId) => goto ('Room', {roomId})
   const goRoom =  () => goto('Room', {roomId:data.roomId})
   const createRoom =  () => {
     fetch('http://10.173.8.220:4444/createRoom', 
@@ -52,7 +52,7 @@ const Main = props => {
         <TouchableOpacity onPress={createRoom}  style={{marginTop:20, marginLeft:16, backgroundColor:'blue', width:140, paddingHorizontal:8,paddingVertical:12,borderRadius:10}}>
            <Text style={{color:'#fff'}}>Создать комнату</Text>
         </TouchableOpacity>
-      }
+      } 
 
 
     </View>
