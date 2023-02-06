@@ -16,22 +16,13 @@ const Main = props => {
     socket.on(ACTIONS.SHARE_ROOMS, ({rooms = []} = {}) => {
       setRooms(rooms)
     })
-    socket.on(ACTIONS.ROOM_DATA, data => console.log({data}))
+    socket.on(ACTIONS.ROOM_DATA, data => alert(JSON.stringify(data)))
 
   },[])
-  
+  console.log({rooms});
   const connectionRoom = (roomId) => goto ('Room', {roomId})
   const goRoom =  () => goto('Room', {roomId:data.roomId})
-  const createRoom =  () => {
-    fetch('http://192.168.0.108:4444/createRoom', 
-    { 
-      method:'POST',
-      // body:JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json', 'Authorization':'eyJhbGciOiJIUzI1NiJ9.bWVkaWNpbmU.O_X9bVp1x9ZPgmvQ_fvEhmBcOi250rXiJzbXl9hO7RM'},
-    }
-    ).then(res => res.json()).then(res => {setData(res)})
-    .catch(err => console.log('ERROR -->> ', err))
-  }
+
   
   // console.log({data});
   return (
