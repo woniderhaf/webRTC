@@ -16,7 +16,7 @@ const Main = props => {
     socket.on(ACTIONS.SHARE_ROOMS, ({rooms = []} = {}) => {
       setRooms(rooms)
     })
-    socket.on(ACTIONS.ROOM_DATA, data => alert(JSON.stringify(data)))
+    // socket.on(ACTIONS.ROOM_DATA, data => alert(JSON.stringify(data)))
 
   },[])
   console.log({rooms});

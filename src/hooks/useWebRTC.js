@@ -4,31 +4,52 @@ import useStateWithCallback from './useStateWithCallback';
 import socket from '../socket/socket';
 import ACTIONS from '../socket/actions';
 import {mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate} from 'react-native-webrtc'
+import { Linking } from 'react-native';
 export const LOCAL_VIDEO = 'LOCAL_VIDEO';
 
 
 export default function useWebRTC(roomID) {
+
   const [clients, updateClients] = useStateWithCallback([]);
-  const [startCall,setStartCall] = useState(null)
+  const [isCallEnd,setIsCallEnd] = useState(false)
+  const [roomData,setRoomData] = useState(null)
+
   const rotateCamera = async() => {
     const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
     videoTrack._switchCamera();
   }
 
   const changeAudio = async(bool) => {
-    const audioTrack = await localMediaStream.current.getAudioTracks()[ 0 ];
+    try {
+      const audioTrack = await localMediaStream.current.getAudioTracks()[ 0 ];
 
-    if(bool) {
-      audioTrack.enabled = true
+      if(bool) {
+        audioTrack.enabled = true
+      }
+      else {
+        audioTrack.enabled = false
+      }
+      return true
+    } catch (error) {
+      return false
     }
-    else {
-      audioTrack.enabled = false
-    }
+
   }
 
   const changeCamera = async(videoBool) => {
-    const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
-    videoTrack.enabled = videoBool
+    try {
+      const videoTrack = await localMediaStream.current.getVideoTracks()[ 0 ];
+      if(videoBool) {
+        videoTrack.enabled = true
+      }
+      else {
+        videoTrack.enabled = false
+      }
+      return true
+    } catch (error) {
+      return false
+    }
+
   }
 
   const addNewClient = useCallback((newClient, cb) => {
@@ -41,12 +62,31 @@ export default function useWebRTC(roomID) {
     }, cb);
   }, [clients, updateClients]);
 
+  const callEnd = async () => {
+    socket.emit(ACTIONS.LEAVE)
+  }
+
+  const soketAddFile = async (data) => {
+    socket.emit(ACTIONS.ADD_FILE, data)
+  }
+
   const peerConnections = useRef({});
   const localMediaStream = useRef(null);
   const peerMediaElements = useRef({
     [LOCAL_VIDEO]: null,
-  });
+  })
+
   useEffect(() => {
+    socket.on(ACTIONS.ROOM_DATA, res => {setRoomData(res); console.log('room data',res);})
+    return () => {
+      socket.off(ACTIONS.ROOM_DATA)
+    }
+  }, [])
+
+  useEffect(() => {
+    socket.on(ACTIONS.CALL_END, () => {
+      setIsCallEnd(true)
+    })
     async function handleNewPeer({peerID, createOffer}) {
       if (peerID in peerConnections.current) {
         return console.warn(`Already connected to peer ${peerID}`);
@@ -62,7 +102,6 @@ export default function useWebRTC(roomID) {
             peerID,
             iceCandidate: event.candidate,
           });
-        setStartCall(new Date().getTime())
         }
       }
 
@@ -113,6 +152,7 @@ export default function useWebRTC(roomID) {
 
     return () => {
       socket.off(ACTIONS.ADD_PEER);
+      socket.off(ACTIONS.CALL_END)
     }
   }, []);
 
@@ -173,41 +213,47 @@ export default function useWebRTC(roomID) {
   }, []);
 
   useEffect(() => {
-    async function startCapture() {
-      const devices = await mediaDevices.enumerateDevices()
-      const cameraDevices = devices.filter(device => device.kind === 'videoinput' ? device:false)
-      mediaStream = await mediaDevices.getUserMedia({
-        audio: true,
-        video: {
-          width: 1280,
-          height: 720,
+    try {
+      async function startCapture() {
+        const devices = await mediaDevices.enumerateDevices()
+        const cameraDevices = devices.filter(device => device.kind === 'videoinput' ? device:false)
+        const audioDevices = devices.filter(device => device.kind === 'audioinput' ? device:false)
+        mediaStream = await mediaDevices.getUserMedia({
+          audio: audioDevices.length ? true : false,
+          video: {
+            width: 1280,
+            height: 720,
+          }
+        });
+        if(cameraDevices.length < 1) {
+          let videoTrack = await mediaStream.getVideoTracks()[ 0 ];
+          videoTrack.enabled = false;
         }
-      });
-      if(cameraDevices.length < 1) {
-        let videoTrack = await mediaStream.getVideoTracks()[ 0 ];
-        videoTrack.enabled = false;
+        localMediaStream.current = mediaStream
+
+        addNewClient(LOCAL_VIDEO, () => {
+          const localVideoElement = peerMediaElements.current[LOCAL_VIDEO];
+
+          if (localVideoElement) {
+            localVideoElement.volume = 0;
+            localVideoElement.srcObject = localMediaStream.current;
+          }
+        });
       }
-      localMediaStream.current = mediaStream
-
-      addNewClient(LOCAL_VIDEO, () => {
-        const localVideoElement = peerMediaElements.current[LOCAL_VIDEO];
-
-        if (localVideoElement) {
-          localVideoElement.volume = 0;
-          localVideoElement.srcObject = localMediaStream.current;
-        }
-      });
-    }
-
-    startCapture()
+      startCapture()
       .then(() => socket.emit(ACTIONS.JOIN, {room: roomID}))
-      .catch(e => console.error('Error getting userMedia:', e));
+      .catch(e => {alert('Вы запретили аудио или видео'); Linking.openSettings()});
 
     return () => {
       localMediaStream.current?.getTracks().forEach(track => track.stop());
-
+      localMediaStream.current =  null
       socket.emit(ACTIONS.LEAVE);
     };
+    } catch (error) {
+        
+    }
+
+ 
   }, [roomID]);
 
 
@@ -218,6 +264,9 @@ export default function useWebRTC(roomID) {
     rotateCamera,
     changeAudio,
     changeCamera,
-    startCall
+    callEnd,
+    isCallEnd,
+    soketAddFile,
+    roomData
   };
 }
