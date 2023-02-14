@@ -1,18 +1,24 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { View, Text, Dimensions, StyleSheet, Image, StatusBar, TouchableOpacity, Platform, TextInput , Linking, Modal} from 'react-native'
-import RNFetchBlob from 'rn-fetch-blob'
+
+// img 
+import employeeAvatar from '../../assets/employeeAvatar.jpg'
+
 import { RTCView,  } from 'react-native-webrtc'
 import useWebRTC from '../hooks/useWebRTC'
-import InCallManager from 'react-native-incall-manager'
 import socket from '../socket/socket'
+
+//plug-ins
+import RNFetchBlob from 'rn-fetch-blob'
+import InCallManager from 'react-native-incall-manager'
 import Sound from 'react-native-sound'
 import {MotiView} from 'moti'
 import DocumentPicker from 'react-native-document-picker'
-import { Svg, SvgXml } from 'react-native-svg'
+import { SvgXml } from 'react-native-svg'
 import { Easing } from 'react-native-reanimated'
 import BottomSheet, { useBottomSheetTimingConfigs }  from '@gorhom/bottom-sheet'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
-import employeeAvatar from '../../assets/employeeAvatar.jpg'
+
 // icons
 const icons = {
   callOff: `<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="36" cy="36" r="36" fill="#EF4444"/><path fill-rule="evenodd" clip-rule="evenodd" d="M35.9957 35.0023C27.5347 35.0035 31.4684 40.8568 26.0824 40.8587C20.8888 40.8594 18.8759 41.832 18.8768 35.2517C18.9577 34.5083 17.5914 27.9044 35.9955 27.9018C54.4019 27.8992 53.0406 34.5036 53.1213 35.247C53.1215 41.8443 51.1089 40.8541 45.9153 40.8548C40.5282 40.8556 44.4566 35.0011 35.9957 35.0023Z" fill="white"/></svg>`,
@@ -35,14 +41,14 @@ const Room = ({route,navigation}) => {
   const {
     changeAudio:useChangeAudio,
     changeCamera:useChangeCamera,
-    clients,
     callEnd,
     rotateCamera,
+    soketAddFile,
     localMediaStream,
     peerConnections,
     isCallEnd,
-    soketAddFile,
-    roomData
+    roomData,
+    clients,
   } = useWebRTC(roomId)
 
   const [isFrontCamera,setIsFrontCamera] = useState(true)
@@ -143,7 +149,7 @@ const Room = ({route,navigation}) => {
     return times
   }
   const addFiles = async () => {
-    const res = await DocumentPicker.pick({presentationStyle: 'fullScreen'})
+    const res = await DocumentPicker.pick({presentationStyle: 'fullScreen', type:['image/jpeg','image/png', 'image/webp', 'application/pdf', 'application/msword']})
     const uri = res[0].uri
     const base64 = await RNFetchBlob.fs.readFile(uri,'base64')
     setFile({name:res[0].name, base64, type:res[0].type})
@@ -173,7 +179,7 @@ const Room = ({route,navigation}) => {
       <View 
         style={{backgroundColor:'gray', position:'absolute', top:height/3, right:width/4, width:width/2,height:height/5,justifyContent:'space-between'}}
       >
-        <Text style={{color:'white', fontSize:20,textAlign:'center'}}>Ошибка</Text>
+        <Text style={{color:'white', fontSize:20,textAlign:'center'}}>Комната переполнена</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={{color:'white', fontSize:20,textAlign:'center'}}>Выйти</Text>
         </TouchableOpacity>
